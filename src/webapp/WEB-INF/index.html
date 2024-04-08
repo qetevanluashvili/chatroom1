@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Rooms</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        #chatRoomList {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #createRoomModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        #createRoomModal form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #createRoomModal label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #createRoomModal input[type="text"],
+        #createRoomModal input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #createRoomModal button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #createRoomModal button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Chat Rooms</h1>
+<div id="chatRoomList">
+
+</div>
+<button onclick="showCreateRoomForm()">Create New Room</button>
+
+<div id="createRoomModal" style="display: none;">
+    <h2>Create New Room</h2>
+    <form onsubmit="createRoom(event)">
+        <label for="roomName">Room Name:</label>
+        <input type="text" id="roomName" name="roomName" required><br>
+        <label for="maxMembers">Max Members:</label>
+        <input type="number" id="maxMembers" name="maxMembers" required><br>
+        <button type="submit">Create</button>
+
+    </form>
+</div>
+
+<script>
+
+function fetchChatRooms() {
+    fetch('/api/chatRooms')
+
+        .then(response => response.json())
+        .then(data => {
+            const chatRoomList = document.getElementById('chatRoomList');
+            chatRoomList.innerHTML = ''; // Clear previous chat rooms
+            data.forEach(chatRoom => {
+                const chatRoomItem = document.createElement('div');
+                chatRoomItem.classList.add('chatRoomItem');
+                chatRoomItem.innerHTML = `
+                    <h3>${chatRoom.name}</h3>
+                    <p>Members: ${chatRoom.memberCount}</p>
+                `;
+                chatRoomList.appendChild(chatRoomItem);
+            });
+        })
+        .catch(error => console.error('Error fetching chat rooms:', error));
+}
+
+
+function showCreateRoomForm() {
+    document.getElementById('createRoomModal').style.display = 'block';
+}
+
+
+function createRoom(event) {
+    event.preventDefault(); // Prevent form submission
+    const roomName = document.getElementById('roomName').value;
+    const maxMembers = document.getElementById('maxMembers').value;
+
+    fetch('/api/createRoom', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ roomName, maxMembers })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            document.getElementById('createRoomModal').style.display = 'none';
+            fetchChatRooms(); // Refresh chat room list
+        } else {
+            alert('Failed to create room: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error creating room:', error));
+}
+
+ function goToChatRoom() {
+            window.location.href = "chatroom.html";
+});
+
+    </script>
+</body>
+</html>
